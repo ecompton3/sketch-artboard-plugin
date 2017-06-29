@@ -1,0 +1,30 @@
+{
+    "name": "Artboard Pairer",
+    "identifier": "com.willowtreeapps.artboard.exporter",
+    "version": "0.1",
+    "description": "PAirs an Artboard to an existing one, allowing for in-sync dupelicates",
+    "authorEmail": "evan.compton@wilowtreeapps.com",
+    "author": "Evan Compton",
+    "commands": [
+        {
+            "name": "Update Pairings...",
+            "identifier": "updatePairs",
+            "shortcut": "",
+            "script": "main.js",
+            "handler": "updatePairs"
+        },
+        {
+            "name": "Create Pairing...",
+            "identifier": "createPair",
+            "shortcut": "",
+            "script": "main.js",
+            "handler": "createPair"
+        }
+    ],
+    "menu": {
+        "items": [
+            "updatePairs",
+            "createPair"
+        ]
+    }
+}
