@@ -1,2 +1,2 @@
 # sketch-artboard-plugin
-Sketch Plugin the syncs two artboards together as a pair
+Sketch Plugin that syncs two artboards together as a pair

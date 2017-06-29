@@ -3,41 +3,56 @@
 function createPair(context) {
     var doc = context.document;
     var selection = context.selection;
-    if(selection.length !== 1) {
-        doc.showMessage("One Artboard Not Selected");
+    if(selection.length == 0) {
+        doc.showMessage("At Least One Artboard Not Selected");
         return;
     }
-    var master = selection.firstObject();
-    if([master className] != "MSArtboardGroup") {
-        doc.showMessage("Selection is not an Artboard");
+    var copyNames = []
+    for(var i = 0; i < selection.length; i++) {
+        var current = selection[i];
+        if([current className] != "MSArtboardGroup") {
+            doc.showMessage("Selections Must Only Be Artboards");
+            return;
+        }
+        copyNames.push([current name] + '');
+    }
+    
+    var masterName = [doc askForUserInput:"Name of Artboard to Copy To:" initialValue:""];
+    if(!masterName || masterName == ""){
+        doc.showMessage("No Name Provided");
         return;
     }
-    var copyName = [doc askForUserInput:"Name of Artboard to Copy To:" initialValue:""];
-    doc.showMessage(copyName);
+    if(!findArtboard(doc, masterName)) {
+        doc.showMessage("Artboard Does Not Exist");
+        return;
+    }
     var json = readJSONfromFile(doc);
-    var pairExists = false;
+    var masterExists = false;
     if(json) {
         for (var i = 0; i < json.pairs.length; i++) {
             var current = json.pairs[i];
-            if(current.master == [master name] && current.copy == copyName) {
-                pairExists = true;
-                doc.showMessage("Pairing Already Exsists");
-                break;
+            if(current.master == masterName) {
+                for(var j = 0; j < copyNames.length; j++) {
+                    if(current.copies.indexOf(copyNames[j]) >= 0) {
+                        continue;
+                    }
+                    json.pairs[i].copies.push(copyNames[j]);
+                }
+                masterExists = true   
             }
         }
     } else {
         json = {"pairs":[]}
     }
-    if(!pairExists) {
-        var masterName = [master name];
-        // Need to convert vlaues to JS String objects
+    if(!masterExists) {
+        // Need to coerce vlaues to JS String objects
         json.pairs.push({
-            "master": masterName + '',
-            "copy": copyName + ''
+            "master" : masterName + '',
+            "copies": copyNames
         })
-        writeJSONToFile(doc, json)
-        doc.showMessage("Pairing Created");
     }
+    writeJSONToFile(doc, json)
+    doc.showMessage("Pairing Created");
 }
 
 function updatePairs(context) {
@@ -47,15 +62,34 @@ function updatePairs(context) {
         doc.showMessage("No Pairings Exist");
         return;
     }
+    var mastersToRemove = []
     for (var i = 0; i < pairings.pairs.length; i++) {
         var current = pairings.pairs[i];
         var master = findArtboard(doc, current.master);
-        var copy = findArtboard(doc, current.copy)
-        if(!master || !copy) {
-            doc.showMessage("Pairing " + current.master + '/' + current.copy + ' no longer exists');
+        var copiesToRemove = []
+        if(!master) {
+            mastersToRemove.push(i);
             continue;
         }
-        createNewArtboard(master, copy);
-        copy.removeFromParent();
+        for(var j = 0; j < current.copies.length; j++) {
+            var copyName = current.copies[j]
+            var copy = findArtboard(doc, copyName)
+            if(!copy) {
+                copiesToRemove.push(i);
+                continue;
+            }
+            createNewArtboard(master, copy);
+            copy.removeFromParent();
+        }
+        var newCopies = current.copies.filter(function(element,index){
+            return copiesToRemove.indexOf(index) < 0;
+        });
+        pairings.pairs[i].copies = newCopies;        
     }
+    var newMasters = pairings.pairs.filter(function(element,index){
+            return mastersToRemove.indexOf(index) < 0;
+    });
+    pairings.pairs = newMasters;
+    writeJSONToFile(doc, pairings);
+    doc.showMessage("Pairings Updated");
 }
