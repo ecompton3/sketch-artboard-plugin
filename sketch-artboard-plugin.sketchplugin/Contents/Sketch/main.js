@@ -17,7 +17,7 @@ function createPair(context) {
         copyNames.push([current name] + '');
     }
     
-    var masterName = [doc askForUserInput:"Name of Artboard to Copy To:" initialValue:""];
+    var masterName = [doc askForUserInput:"Name of Artboard to use as Master:" initialValue:""];
     if(!masterName || masterName == ""){
         doc.showMessage("No Name Provided");
         return;
