@@ -19,12 +19,20 @@
             "shortcut": "",
             "script": "main.js",
             "handler": "createPair"
+        },
+        {
+            "name": "Remove Pairing...",
+            "identifier": "removePair",
+            "shortcut": "",
+            "script": "main.js",
+            "handler": "removePair"
         }
     ],
     "menu": {
         "items": [
             "updatePairs",
-            "createPair"
+            "createPair",
+            "removePair"
         ]
     }
 }

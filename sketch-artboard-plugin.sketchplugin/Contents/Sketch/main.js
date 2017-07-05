@@ -93,3 +93,55 @@ function updatePairs(context) {
     writeJSONToFile(doc, pairings);
     doc.showMessage("Pairings Updated");
 }
+
+function removePair(context) {
+    var doc = context.document;
+    var selection = context.selection;
+    if(selection.length == 0) {
+        doc.showMessage("At Least One Artboard Not Selected");
+        return;
+    }
+    var copyNames = []
+    for(var i = 0; i < selection.length; i++) {
+        var current = selection[i];
+        if([current className] != "MSArtboardGroup") {
+            doc.showMessage("Selections Must Only Be Artboards");
+            return;
+        }
+        copyNames.push([current name] + '');
+    }
+    
+    var masterName = [doc askForUserInput:"Name of Artboard currently set as Master:" initialValue:""];
+    if(!masterName || masterName == ""){
+        doc.showMessage("No Name Provided");
+        return;
+    }
+    if(!findArtboard(doc, masterName)) {
+        doc.showMessage("Artboard Does Not Exist");
+        return;
+    }
+    var json = readJSONfromFile(doc);
+    if(json) {
+        for (var i = 0; i < json.pairs.length; i++) {
+            var current = json.pairs[i];
+            var copiesToRemove = [];
+            if(current.master == masterName) {
+                for(var j = 0; j < copyNames.length; j++) {
+                    if(current.copies.indexOf(copyNames[j]) >= 0) {
+                        copiesToRemove.push(j);
+                    }
+                }
+                var newCopies = current.copies.filter(function(element,index){
+                    return copiesToRemove.indexOf(index) < 0;
+                });
+                json.pairs[i].copies = newCopies;
+                break;
+            }
+        }
+        writeJSONToFile(doc, json)
+        doc.showMessage("Pairing Removed");
+    } else {
+        doc.showMessage("No pairings exist for document");
+    }
+    
+}
