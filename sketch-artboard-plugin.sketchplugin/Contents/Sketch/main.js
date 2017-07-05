@@ -129,6 +129,7 @@ function removePair(context) {
                 for(var j = 0; j < copyNames.length; j++) {
                     if(current.copies.indexOf(copyNames[j]) >= 0) {
                         copiesToRemove.push(j);
+                        removeArtboardByName(findArtboard(doc,copyNames[j]), current.master)
                     }
                 }
                 var newCopies = current.copies.filter(function(element,index){

@@ -9,7 +9,6 @@ var getFilePath = function (context) {
           build += parts[i] + '/';
       }
     }
-    log(build+context.document.cloudName()+"-pairings.json")
     return build+context.document.cloudName()+"-pairings.json";
 }
 
@@ -23,13 +22,28 @@ var writeJSONToFile = function (context, jsonObj) {
     [file writeToFile: filePath atomically: true encoding: NSUTF8StringEncoding error: errorHandler];
 }
 var readJSONfromFile = function(context) {
-    
     var filePath = getFilePath(context)
     var fileContents = NSString.stringWithContentsOfFile(filePath);
     return JSON.parse(fileContents);
 }
 
+var removeArtboardByName = function(copy, name) {
+    var layers = copy.layers()
+    var newLayers = []
+    for(var i = 0; i < layers.length; i++) {
+        var layer = layers[i]
+        var name = [layer name];
+        if(name == "Master-synced") {
+            continue;
+        
+        }
+        newLayers.push(layer)
+    }
+    [copy setLayers: newLayers]
+}
+
 var createNewArtboard = function(master, copy) {
+    var newName = [master name] + "-synced";
     masterRect = [master absoluteRect];
     newArtboardWidth = [masterRect width];
     newArtboardHeight = [masterRect height];
@@ -53,12 +67,10 @@ var createNewArtboard = function(master, copy) {
     var extraLayers = [NSMutableArray array];
     for(var j = 0; j < [[copy layers] count]; j++) {
         var layer = [[copy layers] objectAtIndex:j];
-        log(layer)
-        if([layer className] != "MSArtboardGroup" || [layer name] != [master name]) {
+        if([layer className] != "MSArtboardGroup" || [layer name] != newName) {
             [extraLayers addObject: layer]
         }
     }
-    log(extraLayers);
     [newArtboard addLayers:extraLayers];
 
 
@@ -66,7 +78,8 @@ var createNewArtboard = function(master, copy) {
     masterItemCopyFrame = [masterItemCopy frame];
     [masterItemCopyFrame setX:0];
     [masterItemCopyFrame setY:0];
-
+    
+    [masterItemCopy setName: newName];
     parentGroup = [master parentGroup];
     [parentGroup removeLayer:masterItemCopy];
     [newArtboard setName: [copy name]];
