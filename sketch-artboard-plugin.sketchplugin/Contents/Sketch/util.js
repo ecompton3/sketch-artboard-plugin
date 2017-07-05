@@ -1,23 +1,30 @@
-var getFilePath = function (doc) {
-    var path = doc.fileURL().path();
+var getFilePath = function (context) {
+    var path = context.scriptPath;
     var parts = path.split('/');
     var build = '/';
-    for(var i = 0; i< parts.length-1; i++) {
+    // We do -4 as that gets us the path to the top level plugin directory for sketch
+    // saving inside the plugin would mean the files are lost upon upgrade of the plugin
+    for(var i = 0; i< parts.length-4; i++) {
       if(parts[i] !== "") {
           build += parts[i] + '/';
       }
     }
-    return build+doc.cloudName()+"-pairings.json";
+    log(build+context.document.cloudName()+"-pairings.json")
+    return build+context.document.cloudName()+"-pairings.json";
 }
 
-var writeJSONToFile = function (doc, jsonObj) {
-    var file = NSString.stringWithString(JSON.stringify(jsonObj, null, "\t"));
-    var filePath = getFilePath(doc);
-    [file writeToFile: filePath atomically: true encoding: NSUTF8StringEncoding error: null];
+var errorHandler = function(error) {
+    log(error);
 }
-var readJSONfromFile = function(doc) {
+
+var writeJSONToFile = function (context, jsonObj) {
+    var file = NSString.stringWithString(JSON.stringify(jsonObj, null, "\t"));
+    var filePath = getFilePath(context);
+    [file writeToFile: filePath atomically: true encoding: NSUTF8StringEncoding error: errorHandler];
+}
+var readJSONfromFile = function(context) {
     
-    var filePath = getFilePath(doc)
+    var filePath = getFilePath(context)
     var fileContents = NSString.stringWithContentsOfFile(filePath);
     return JSON.parse(fileContents);
 }

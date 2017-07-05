@@ -26,7 +26,7 @@ function createPair(context) {
         doc.showMessage("Artboard Does Not Exist");
         return;
     }
-    var json = readJSONfromFile(doc);
+    var json = readJSONfromFile(context);
     var masterExists = false;
     if(json) {
         for (var i = 0; i < json.pairs.length; i++) {
@@ -51,13 +51,13 @@ function createPair(context) {
             "copies": copyNames
         })
     }
-    writeJSONToFile(doc, json)
+    writeJSONToFile(context, json)
     doc.showMessage("Pairing Created");
 }
 
 function updatePairs(context) {
     var doc = context.document;
-    var pairings = readJSONfromFile(doc);
+    var pairings = readJSONfromFile(context);
     if(!pairings) {
         doc.showMessage("No Pairings Exist");
         return;
@@ -90,7 +90,7 @@ function updatePairs(context) {
             return mastersToRemove.indexOf(index) < 0;
     });
     pairings.pairs = newMasters;
-    writeJSONToFile(doc, pairings);
+    writeJSONToFile(context, pairings);
     doc.showMessage("Pairings Updated");
 }
 
@@ -120,7 +120,7 @@ function removePair(context) {
         doc.showMessage("Artboard Does Not Exist");
         return;
     }
-    var json = readJSONfromFile(doc);
+    var json = readJSONfromFile(context);
     if(json) {
         for (var i = 0; i < json.pairs.length; i++) {
             var current = json.pairs[i];
@@ -138,7 +138,7 @@ function removePair(context) {
                 break;
             }
         }
-        writeJSONToFile(doc, json)
+        writeJSONToFile(context, json)
         doc.showMessage("Pairing Removed");
     } else {
         doc.showMessage("No pairings exist for document");
