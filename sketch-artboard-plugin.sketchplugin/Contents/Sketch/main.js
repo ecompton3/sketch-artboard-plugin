@@ -8,16 +8,27 @@ function createPair(context) {
         return;
     }
     var copyNames = []
+    var numBoards = 0
     for(var i = 0; i < selection.length; i++) {
         var current = selection[i];
-        if([current className] != "MSArtboardGroup") {
-            doc.showMessage("Selections Must Only Be Artboards");
-            return;
+        if([current className] == "MSArtboardGroup") {
+            copyNames.push([current name] + '');
+            numBoards +=1
         }
-        copyNames.push([current name] + '');
     }
-    
-    var masterName = [doc askForUserInput:"Name of Artboard to use as Master:" initialValue:""];
+    if(numBoards == 0) {
+        doc.showMessage("At Least One Artboard Must Be Selected");
+        return;
+    }
+    var boardNames = getAllArtboardNames(context)
+    var window = createDropDownWindow(context,"Create Pairing",boardNames);
+  var alert = window[0]; 
+
+  var response = alert.runModal();
+  if (response != "1000"){
+    return;
+  }
+    var masterName = getDropdownValue();
     if(!masterName || masterName == ""){
         doc.showMessage("No Name Provided");
         return;
@@ -51,8 +62,10 @@ function createPair(context) {
             "copies": copyNames
         })
     }
+    print(json)
     writeJSONToFile(context, json)
     doc.showMessage("Pairing Created");
+    updatePairs(context);
 }
 
 function updatePairs(context) {
@@ -69,6 +82,13 @@ function updatePairs(context) {
         var copiesToRemove = []
         if(!master) {
             mastersToRemove.push(i);
+            for(var j = 0; j < current.copies.length; j++) {
+                var copyName = current.copies[j];
+                var copy = findArtboard(doc, copyName)
+                if(copy) {
+                    removeArtboardByName(copy,current.master);
+                }
+            }
             continue;
         }
         for(var j = 0; j < current.copies.length; j++) {
@@ -97,21 +117,47 @@ function updatePairs(context) {
 function removePair(context) {
     var doc = context.document;
     var selection = context.selection;
-    if(selection.length == 0) {
-        doc.showMessage("At Least One Artboard Not Selected");
+    if(selection.length < 1) {
+        doc.showMessage("An Artboard Must Be Selected");
         return;
     }
-    var copyNames = []
-    for(var i = 0; i < selection.length; i++) {
-        var current = selection[i];
-        if([current className] != "MSArtboardGroup") {
-            doc.showMessage("Selections Must Only Be Artboards");
-            return;
-        }
-        copyNames.push([current name] + '');
-    }
     
-    var masterName = [doc askForUserInput:"Name of Artboard currently set as Master:" initialValue:""];
+    var copy;
+    var numBoards = 0;
+    for(var y = 0; y < selection.length; y++) {
+        var s = selection[y]
+        if([s className] == "MSArtboardGroup") {
+             copy = s
+             numBoards += 1;
+        }
+    }
+
+    if(numBoards != 1) {
+        doc.showMessage("Exactly One Artboard Must Be Selected");
+        return;
+    }
+
+    
+    var copyName = ([copy name] + '');
+    var syncNames = []
+    var layers = copy.layers()
+    for(var x = 0; x < layers.length; x++) {
+        var layer = layers[x];
+        var layerName = [layer name]
+        if([layer className] == "MSArtboardGroup" && layerName.indexOf('-synced')) {
+            var nameToAdd = layerName.split('-')[0];
+            syncNames.push(nameToAdd);
+        }
+    }
+    var window = createDropDownWindow(context,"Remove Pairing", syncNames);
+    var alert = window[0]; 
+
+    var response = alert.runModal();
+    if (response != "1000"){
+      return;
+    }
+    var masterName = getDropdownValue();
+    log(masterName);
     if(!masterName || masterName == ""){
         doc.showMessage("No Name Provided");
         return;
@@ -126,12 +172,12 @@ function removePair(context) {
             var current = json.pairs[i];
             var copiesToRemove = [];
             if(current.master == masterName) {
-                for(var j = 0; j < copyNames.length; j++) {
-                    if(current.copies.indexOf(copyNames[j]) >= 0) {
-                        copiesToRemove.push(j);
-                        removeArtboardByName(findArtboard(doc,copyNames[j]), current.master)
+                    var index = current.copies.indexOf(copyName)
+                    if(index >= 0) {
+                        copiesToRemove.push(index);
+                        removeArtboardByName(copy, masterName)
                     }
-                }
+                
                 var newCopies = current.copies.filter(function(element,index){
                     return copiesToRemove.indexOf(index) < 0;
                 });

@@ -32,10 +32,9 @@ var removeArtboardByName = function(copy, name) {
     var newLayers = []
     for(var i = 0; i < layers.length; i++) {
         var layer = layers[i]
-        var name = [layer name];
-        if(name == "Master-synced") {
+        var layerName = [layer name];
+        if(layerName == (name+"-synced")) {
             continue;
-        
         }
         newLayers.push(layer)
     }
@@ -101,4 +100,83 @@ var findArtboard = function(doc, name) {
     }
 
     return filteredArray[0]
+}
+
+var dropdown;
+
+var getDropdownValue = function() {
+    if(dropdown) {
+        return dropdown.titleOfSelectedItem();
+    } else {
+        return null;
+    }
+}
+
+var createDropDownWindow = function(context,title,boardNames) {
+
+    var alert = COSAlertWindow.new();
+
+    alert.setIcon(NSImage.alloc().initByReferencingFile(context.plugin.urlForResourceNamed("copy.png").path()));
+    alert.setMessageText(title)
+
+    // Creating dialog buttons
+    alert.addButtonWithTitle("Ok");
+    alert.addButtonWithTitle("Cancel");
+
+    // Creating the view
+    var viewWidth = 300;
+    var viewHeight = 100;
+
+    var view = NSView.alloc().initWithFrame(NSMakeRect(0, 0, viewWidth, viewHeight));
+    alert.addAccessoryView(view);
+
+    // Create and configure your inputs here
+    // Create label
+    var label = NSTextField.alloc().initWithFrame(NSMakeRect(0,viewHeight - 33,(viewWidth - 100),35));
+    [label setBezeled:false];
+    [label setDrawsBackground:false];
+    [label setEditable:false];
+    [label setSelectable:false];
+    // Add label
+    label.setStringValue("Select Artboard:");
+    view.addSubview(label);
+    
+    // Creating the input
+    dropdown = NSPopUpButton.alloc().initWithFrame(NSMakeRect(0, viewHeight - 50, (viewWidth / 2), 22));
+    var names = boardNames;
+    for(var i = 0; i < names.length; i++) {
+        var name = names[i];
+        [dropdown addItemWithTitle:name];
+    }
+    // Filling the PopUpButton with options    
+    dropdown.selectItemAtIndex(0);
+    // Adding the PopUpButton to the dialog
+    view.addSubview(dropdown);
+
+    // Show the dialog
+    return [alert]
+}
+
+var getAllArtboardNames = function(context) {
+    let pages = context.document.pages();
+    var names = []
+    // Filter layers using NSPredicate
+    for(var i = 0; i < pages.length; i++) {
+        var currentPage = pages[i]
+        var scope =  [currentPage children],
+		predicate = NSPredicate.predicateWithFormat("(className == %@)", "MSArtboardGroup"),
+		layers = [scope filteredArrayUsingPredicate:predicate];
+	
+	    // Loop through filtered layers and select them
+	    var loop = [layers objectEnumerator], layer;
+    
+	    while (layer = [loop nextObject]) {
+		    var nameOfBoard = [layer name]
+            if(nameOfBoard.indexOf("-synced") < 0) {
+                names.push(nameOfBoard);
+            }
+            
+	    }
+    }
+	return names;
 }
