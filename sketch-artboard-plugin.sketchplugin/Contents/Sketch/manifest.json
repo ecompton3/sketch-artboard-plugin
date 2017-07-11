@@ -1,9 +1,9 @@
 {
     "name": "Artboard Pairer",
-    "identifier": "com.willowtreeapps.artboard.exporter",
+    "identifier": "com.willowtreeapps.artboard-pairer",
     "version": "0.3",
-    "description": "PAirs an Artboard to an existing one, allowing for in-sync dupelicates",
-    "authorEmail": "evan.compton@wilowtreeapps.com",
+    "description": "Pairs an Artboard to an existing one, allowing for in-sync dupelicates",
+    "authorEmail": "evan.compton@willowtreeapps.com",
     "author": "Evan Compton",
     "commands": [
         {

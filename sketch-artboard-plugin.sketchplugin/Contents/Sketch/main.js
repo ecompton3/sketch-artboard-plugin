@@ -28,17 +28,9 @@ function createPair(context) {
   if (response != "1000"){
     return;
   }
-    var masterName = getDropdownValue();
-    if(!masterName || masterName == ""){
-        doc.showMessage("No Name Provided");
-        return;
-    }
-    if(!findArtboard(doc, masterName)) {
-        doc.showMessage("Artboard Does Not Exist");
-        return;
-    }
-    var json = readJSONfromFile(context);
-    var masterExists = false;
+  var masterName = getDropdownValue();
+  var json = readJSONfromFile(context);
+  var masterExists = false;
     if(json) {
         for (var i = 0; i < json.pairs.length; i++) {
             var current = json.pairs[i];

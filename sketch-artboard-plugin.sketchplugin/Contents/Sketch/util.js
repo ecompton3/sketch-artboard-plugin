@@ -144,11 +144,11 @@ var createDropDownWindow = function(context,title,boardNames) {
     // Creating the input
     dropdown = NSPopUpButton.alloc().initWithFrame(NSMakeRect(0, viewHeight - 50, (viewWidth / 2), 22));
     var names = boardNames;
+    // Filling the PopUpButton with options  
     for(var i = 0; i < names.length; i++) {
         var name = names[i];
         [dropdown addItemWithTitle:name];
     }
-    // Filling the PopUpButton with options    
     dropdown.selectItemAtIndex(0);
     // Adding the PopUpButton to the dialog
     view.addSubview(dropdown);
@@ -166,8 +166,6 @@ var getAllArtboardNames = function(context) {
         var scope =  [currentPage children],
 		predicate = NSPredicate.predicateWithFormat("(className == %@)", "MSArtboardGroup"),
 		layers = [scope filteredArrayUsingPredicate:predicate];
-	
-	    // Loop through filtered layers and select them
 	    var loop = [layers objectEnumerator], layer;
     
 	    while (layer = [loop nextObject]) {
